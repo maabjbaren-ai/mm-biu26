@@ -1,0 +1,25 @@
+import os
+import numpy as np
+from openai import OpenAI
+
+# אתחול לקוח ה-API באמצעות מפתח הסביבה
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
+def get_embedding(text: str, model: str = "text-embedding-3-small") -> list:
+    """המרת משפט לטוקנים ולווקטור במרחב סמנטי (Embedding)"""
+    text = text.replace("\n", " ")
+    response = client.embeddings.create(input=[text], model=model)
+    return response.data[0].embedding
+
+def calculate_cosine_similarity(text_a: str, text_b: str) -> float:
+    """חישוב מרחק וקטורי מדויק בין שני משפטים (Cosine Similarity)"""
+    vec_a = np.array(get_embedding(text_a))
+    vec_b = np.array(get_embedding(text_b))
+    
+    # נוסחת הקוסינוס המתמטית למדידת המרחק בענן המשמעויות
+    dot_product = np.dot(vec_a, vec_b)
+    norm_a = np.linalg.norm(vec_a)
+    norm_b = np.linalg.norm(vec_b)
+    
+    similarity = dot_product / (norm_a * norm_b)
+    return float(similarity)
